@@ -104,7 +104,7 @@ export default async function InboxSettingsPage({
       <div className="grid gap-6 xl:grid-cols-[1.05fr_1.5fr]">
         <InfoCard
           title="Inbox connection policy"
-          body="This layer stays workflow-first. Desktop use keeps Gmail state in local SQLite, while hosted previews should treat inbox work as read-only planning until durable hosted persistence replaces ephemeral preview storage."
+          body="This layer stays workflow-first. Desktop use can keep Gmail state in local SQLite, while durable hosted deployments can store inbox state in LibSQL/Turso. Ephemeral previews remain read-only."
         >
           <form action={updateInboxConnectionAction}>
             <fieldset

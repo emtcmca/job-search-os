@@ -103,7 +103,7 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
     return { ok: false as const, message: "No candidate profile is available yet." };
   }
 
-  const { settings, currentSpend } = getTailoringBudgetContext();
+  const { settings, currentSpend } = await getTailoringBudgetContext();
 
   if (!settings) {
     return { ok: false as const, message: "AI budget settings are not initialized." };
@@ -179,8 +179,8 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
   const folder = resolve(process.cwd(), "output", "generated", `job-${jobId}`);
   mkdirSync(folder, { recursive: true });
 
-  const strategyVersion = getNextGeneratedDocumentVersion(jobId, "resume_strategy");
-  const letterVersion = getNextGeneratedDocumentVersion(jobId, "cover_letter");
+  const strategyVersion = await getNextGeneratedDocumentVersion(jobId, "resume_strategy");
+  const letterVersion = await getNextGeneratedDocumentVersion(jobId, "cover_letter");
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const companySlug = sanitizeSegment(detail.company?.name ?? "company");
 
@@ -199,7 +199,7 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
   writeFileSync(strategyPath, strategyMarkdown, "utf8");
   writeFileSync(coverLetterPath, coverLetterMarkdown, "utf8");
 
-  createGeneratedDocuments([
+  await createGeneratedDocuments([
     {
       jobId,
       documentType: "resume_strategy",
@@ -230,7 +230,7 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
     },
   ]);
 
-  const application = getTailoringApplication(jobId);
+  const application = await getTailoringApplication(jobId);
   const packet = await getDraftPacketForJob(jobId, application);
 
   if (application) {
@@ -240,13 +240,13 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
       readiness,
     });
 
-    updateTailoringApplication(application.id, {
+    await updateTailoringApplication(application.id, {
       resumeDocId: packet.preferredResumeStrategy?.id ?? application.resumeDocId,
       coverLetterDocId: packet.preferredCoverLetter?.id ?? application.coverLetterDocId,
       status: nextStatus,
     });
 
-    logTailoringApplicationEvent({
+    await logTailoringApplicationEvent({
       applicationId: application.id,
       payload: {
         resumeDocId: packet.preferredResumeStrategy?.id ?? null,
@@ -256,7 +256,7 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
       },
     });
 
-    updateTailoringJobStage(jobId, {
+    await updateTailoringJobStage(jobId, {
       currentStage: inferJobStageFromPacket({
         currentStage: detail.job.currentStage,
         applicationStatus: nextStatus,
@@ -265,7 +265,7 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
       updatedAt: new Date().toISOString(),
     });
   } else {
-    updateTailoringJobStage(jobId, {
+    await updateTailoringJobStage(jobId, {
       currentStage: inferJobStageFromPacket({
         currentStage: detail.job.currentStage,
         packet,
@@ -274,7 +274,7 @@ export async function generateTailoringDraft(jobId: number, requestedProfileId?:
     });
   }
 
-  logTailoringUsageEvent({
+  await logTailoringUsageEvent({
     jobId,
     snapshotHash: detail.snapshot?.snapshotHash ?? null,
     tier: "tailoring",

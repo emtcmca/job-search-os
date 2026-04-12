@@ -79,7 +79,7 @@ export function getDatabaseRuntimeStatus() {
       ephemeral: false,
       label: "Hosted LibSQL",
       message:
-        "This hosted runtime uses durable LibSQL/Turso storage for reads. Write actions stay disabled until the remaining mutation flows finish migrating off the local SQLite call shape.",
+        "This hosted runtime uses durable LibSQL/Turso storage for persisted reads and writes.",
     };
   }
 
@@ -173,17 +173,13 @@ export function getRuntimeEnvironmentSummary() {
 
 export function getHostedPreviewMutationStatus() {
   const runtime = getRuntimeEnvironmentSummary();
-  const readOnlyHostedPreview =
-    runtime.isHosted &&
-    (runtime.database.ephemeral || runtime.database.kind === "libsql_hosted");
+  const readOnlyHostedPreview = runtime.isHosted && runtime.database.ephemeral;
 
   return {
     readOnlyHostedPreview,
     writesAllowed: !readOnlyHostedPreview,
     message: readOnlyHostedPreview
-      ? runtime.database.kind === "libsql_hosted"
-        ? "This hosted deployment now reads from durable LibSQL/Turso storage, but write actions stay disabled until the remaining mutation flows finish migrating away from the local SQLite call shape."
-        : "This hosted preview is running on ephemeral /tmp SQLite storage, so write actions are disabled until the live runtime switches to durable hosted persistence."
+      ? "This hosted preview is running on ephemeral /tmp SQLite storage, so write actions are disabled until the live runtime switches to durable hosted persistence."
       : "Write actions are available for this runtime.",
   };
 }
@@ -197,8 +193,6 @@ export function getHostedPreviewWriteRedirect(targetPath: string, actionLabel: s
 
   const separator = targetPath.includes("?") ? "&" : "?";
   return `${targetPath}${separator}status=error&message=${encodeURIComponent(
-    runtime.database.kind === "libsql_hosted"
-      ? `This hosted deployment is currently read-only while write flows are still being migrated to durable LibSQL storage, so it cannot ${actionLabel} yet.`
-      : `This hosted preview is read-only while it uses ephemeral /tmp SQLite storage, so it cannot ${actionLabel} yet.`,
+    `This hosted preview is read-only while it uses ephemeral /tmp SQLite storage, so it cannot ${actionLabel} yet.`,
   )}`;
 }

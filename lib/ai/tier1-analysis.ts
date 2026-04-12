@@ -42,7 +42,7 @@ export async function runTier1Analysis(jobId: number) {
     return { ok: false as const, message: "Job not found." };
   }
 
-  const settings = db
+  const settings = await db
     .select()
     .from(aiBudgetSettings)
     .where(eq(aiBudgetSettings.id, 1))
@@ -52,7 +52,7 @@ export async function runTier1Analysis(jobId: number) {
     return { ok: false as const, message: "AI budget settings are not initialized." };
   }
 
-  const monthlySpendRow = db
+  const monthlySpendRow = await db
     .select({
       spent: sql<number>`coalesce(sum(${aiUsageEvents.actualCost}), 0)`,
     })
@@ -121,7 +121,7 @@ export async function runTier1Analysis(jobId: number) {
   const outputTokens = usage?.output_tokens ?? estimate.outputTokens;
   const actualCost = calculateActualCost(inputTokens, outputTokens);
 
-  const scoreId = db
+  const scoreId = (await db
     .insert(scores)
     .values({
       jobId,
@@ -137,10 +137,11 @@ export async function runTier1Analysis(jobId: number) {
       reasonsAgainstJson: JSON.stringify(payload.reasonsAgainst),
     })
     .returning({ id: scores.id })
-    .get()?.id;
+    .get())?.id;
 
   if (scoreId) {
-    db.insert(scoreFactors)
+    await db
+      .insert(scoreFactors)
       .values([
         ...payload.reasonsFor.map((reason, index) => ({
           scoreId,
@@ -162,7 +163,8 @@ export async function runTier1Analysis(jobId: number) {
       .run();
   }
 
-  db.insert(aiUsageEvents)
+  await db
+    .insert(aiUsageEvents)
     .values({
       jobId,
       snapshotHash: detail.snapshot?.snapshotHash ?? null,

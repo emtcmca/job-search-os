@@ -7,7 +7,7 @@ const workspaceRoot = process.cwd();
 const scanRoots = ["app", "lib"];
 const fileExtensions = new Set([".ts", ".tsx"]);
 const dbClientImportPattern = /@\/lib\/db\/client/g;
-const dbSyncChainPattern = /(?:db|sqlite)\.[\s\S]{0,800}?\.(get|all|run)\(/g;
+const dbChainPattern = /(?:db|sqlite)\.[\s\S]{0,800}?\.(get|all|run)\(/g;
 
 type FileInventory = {
   path: string;
@@ -41,13 +41,31 @@ function countMatches(value: string, pattern: RegExp) {
   return [...value.matchAll(pattern)].length;
 }
 
+function countLikelySyncDbCalls(content: string) {
+  let count = 0;
+  for (const match of content.matchAll(dbChainPattern)) {
+    const index = match.index ?? 0;
+    const windowStart = Math.max(0, index - 80);
+    const prefix = content.slice(windowStart, index);
+    const normalizedPrefix = prefix.replace(/\s+/g, " ");
+
+    if (/\bawait\s*$/.test(normalizedPrefix)) {
+      continue;
+    }
+
+    count += 1;
+  }
+
+  return count;
+}
+
 async function scanFile(filePath: string): Promise<FileInventory> {
   const content = await readFile(filePath, "utf8");
 
   return {
     path: relative(workspaceRoot, filePath),
     importCount: countMatches(content, dbClientImportPattern),
-    syncCallCount: countMatches(content, dbSyncChainPattern),
+    syncCallCount: countLikelySyncDbCalls(content),
   };
 }
 

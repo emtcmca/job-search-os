@@ -12,7 +12,7 @@ import {
 } from "@/lib/applications/store";
 
 export async function approveGeneratedDocument(input: { documentId: number; jobId: number }) {
-  const document = getGeneratedDocumentRecord(input.documentId);
+  const document = await getGeneratedDocumentRecord(input.documentId);
 
   if (!document || document.jobId !== input.jobId) {
     return {
@@ -21,11 +21,11 @@ export async function approveGeneratedDocument(input: { documentId: number; jobI
     };
   }
 
-  updateGeneratedDocumentRecord(input.documentId, {
+  await updateGeneratedDocumentRecord(input.documentId, {
     approvalState: "approved",
   });
 
-  supersedeApprovedDocuments({
+  await supersedeApprovedDocuments({
     jobId: input.jobId,
     documentType: document.documentType,
     exceptDocumentId: input.documentId,
@@ -39,7 +39,7 @@ export async function approveGeneratedDocument(input: { documentId: number; jobI
 }
 
 export async function linkDocumentToApplication(input: { documentId: number; jobId: number }) {
-  const document = getGeneratedDocumentRecord(input.documentId);
+  const document = await getGeneratedDocumentRecord(input.documentId);
 
   if (!document || document.jobId !== input.jobId) {
     return {
@@ -48,7 +48,7 @@ export async function linkDocumentToApplication(input: { documentId: number; job
     };
   }
 
-  const application = getApplicationRecordForJob(input.jobId);
+  const application = await getApplicationRecordForJob(input.jobId);
 
   if (!application) {
     return {
@@ -58,11 +58,11 @@ export async function linkDocumentToApplication(input: { documentId: number; job
   }
 
   if (document.documentType === "resume_strategy") {
-    updateApplicationRecord(application.id, {
+    await updateApplicationRecord(application.id, {
       resumeDocId: document.id,
     });
   } else if (document.documentType === "cover_letter") {
-    updateApplicationRecord(application.id, {
+    await updateApplicationRecord(application.id, {
       coverLetterDocId: document.id,
     });
   } else {
@@ -73,7 +73,7 @@ export async function linkDocumentToApplication(input: { documentId: number; job
     };
   }
 
-  const refreshedApplication = getApplicationRecordForJob(input.jobId);
+  const refreshedApplication = await getApplicationRecordForJob(input.jobId);
 
   if (!refreshedApplication) {
     return {
@@ -89,11 +89,11 @@ export async function linkDocumentToApplication(input: { documentId: number; job
     readiness,
   });
 
-  updateApplicationRecord(refreshedApplication.id, {
+  await updateApplicationRecord(refreshedApplication.id, {
     status: nextStatus,
   });
 
-  createApplicationEvent({
+  await createApplicationEvent({
     applicationId: refreshedApplication.id,
     eventType: "application_document_selected",
     payload: {
@@ -103,9 +103,9 @@ export async function linkDocumentToApplication(input: { documentId: number; job
     },
   });
 
-  const job = getJobRecord(input.jobId);
+  const job = await getJobRecord(input.jobId);
   if (job) {
-    updateJobRecord(input.jobId, {
+    await updateJobRecord(input.jobId, {
       currentStage: inferJobStageFromPacket({
         currentStage: job.currentStage,
         applicationStatus: nextStatus,

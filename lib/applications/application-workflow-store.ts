@@ -22,21 +22,19 @@ function createApplicationReminder(input: {
 }) {
   const dueAt = new Date(input.dueAtRaw);
   if (Number.isNaN(dueAt.getTime())) {
-    return false;
+    return Promise.resolve(false);
   }
 
-  createReminderRecord({
+  return createReminderRecord({
     applicationId: input.applicationId,
     jobId: input.jobId,
     title: input.title,
     dueAt: dueAt.toISOString(),
-  });
-
-  return true;
+  }).then(() => true);
 }
 
 export async function createOrRefreshApplicationFromJob(jobId: number) {
-  const job = getJobRecord(jobId);
+  const job = await getJobRecord(jobId);
   if (!job) {
     return {
       ok: false as const,
@@ -44,7 +42,7 @@ export async function createOrRefreshApplicationFromJob(jobId: number) {
     };
   }
 
-  const existing = getApplicationRecordForJob(jobId);
+  const existing = await getApplicationRecordForJob(jobId);
   const packet = await getDraftPacketForJob(jobId, existing);
   const readiness = getApplicationReadiness(existing, packet);
   const nextStatus = inferApplicationWorkflowStatus({
@@ -54,7 +52,7 @@ export async function createOrRefreshApplicationFromJob(jobId: number) {
 
   const applicationId = existing
     ? existing.id
-    : createApplicationRecord({
+    : await createApplicationRecord({
         jobId,
         platform: job.source,
         status: nextStatus,
@@ -67,7 +65,7 @@ export async function createOrRefreshApplicationFromJob(jobId: number) {
       });
 
   if (existing) {
-    updateApplicationRecord(existing.id, {
+    await updateApplicationRecord(existing.id, {
       platform: job.source,
       status: nextStatus,
       submissionUrl: existing.submissionUrl,
@@ -87,7 +85,7 @@ export async function createOrRefreshApplicationFromJob(jobId: number) {
     };
   }
 
-  createApplicationEvent({
+  await createApplicationEvent({
     applicationId,
     eventType: existing ? "application_refreshed" : "application_created",
     payload: {
@@ -98,7 +96,7 @@ export async function createOrRefreshApplicationFromJob(jobId: number) {
     },
   });
 
-  updateJobRecord(jobId, {
+  await updateJobRecord(jobId, {
     currentStage: inferJobStageFromPacket({
       currentStage: job.currentStage,
       applicationStatus: nextStatus,
@@ -128,7 +126,7 @@ export async function updateApplicationWorkflow(input: {
   nextFollowUpAt: string;
   notes: string;
 }) {
-  const existing = getApplicationRecord(input.applicationId);
+  const existing = await getApplicationRecord(input.applicationId);
 
   if (!existing) {
     return {
@@ -171,7 +169,7 @@ export async function updateApplicationWorkflow(input: {
         })
       : input.status;
 
-  updateApplicationRecord(input.applicationId, {
+  await updateApplicationRecord(input.applicationId, {
     platform: input.platform || existing.platform,
     status: nextStatus,
     submittedAt,
@@ -182,7 +180,7 @@ export async function updateApplicationWorkflow(input: {
     notes: input.notes || null,
   });
 
-  createApplicationEvent({
+  await createApplicationEvent({
     applicationId: input.applicationId,
     eventType: "application_updated",
     payload: {
@@ -197,7 +195,7 @@ export async function updateApplicationWorkflow(input: {
   });
 
   if (input.status === "applied" && existing.status !== "applied") {
-    createApplicationEvent({
+    await createApplicationEvent({
       applicationId: input.applicationId,
       eventType: "submission_recorded",
       payload: {
@@ -211,8 +209,8 @@ export async function updateApplicationWorkflow(input: {
   }
 
   if (input.nextFollowUpAt) {
-    const job = getJobRecord(input.jobId);
-    createApplicationReminder({
+    const job = await getJobRecord(input.jobId);
+    await createApplicationReminder({
       applicationId: input.applicationId,
       jobId: input.jobId,
       title: `Follow up on ${job?.title ?? "application"}`,
@@ -233,7 +231,7 @@ export async function updateApplicationWorkflow(input: {
     closed: "closed",
   };
 
-  updateJobRecord(input.jobId, {
+  await updateJobRecord(input.jobId, {
     currentStage: nextStageMap[nextStatus] ?? "ready",
     updatedAt: new Date().toISOString(),
   });
@@ -255,7 +253,7 @@ export async function logApplicationEvent(input: {
   reminderDueAt: string;
   reminderTitle: string;
 }) {
-  const application = getApplicationRecord(input.applicationId);
+  const application = await getApplicationRecord(input.applicationId);
 
   if (!application) {
     return {
@@ -272,7 +270,7 @@ export async function logApplicationEvent(input: {
     };
   }
 
-  createApplicationEvent({
+  await createApplicationEvent({
     applicationId: input.applicationId,
     eventType: input.eventType,
     payload: {
@@ -292,18 +290,18 @@ export async function logApplicationEvent(input: {
   const nextStatus = nextStatusMap[input.eventType];
 
   if (nextStatus) {
-    updateApplicationRecord(input.applicationId, {
+    await updateApplicationRecord(input.applicationId, {
       status: nextStatus,
     });
 
-    updateJobRecord(input.jobId, {
+    await updateJobRecord(input.jobId, {
       currentStage: nextStatus === "interview" ? "interview" : nextStatus,
       updatedAt: new Date().toISOString(),
     });
   }
 
   if (input.reminderDueAt) {
-    createApplicationReminder({
+    await createApplicationReminder({
       applicationId: input.applicationId,
       jobId: input.jobId,
       title: input.reminderTitle || input.summary,

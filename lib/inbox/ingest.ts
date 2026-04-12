@@ -104,7 +104,7 @@ async function applyInboxMessageWorkflow(input: {
   };
   const eventType = eventTypeMap[input.messageType];
 
-  createApplicationEvent({
+  await createApplicationEvent({
     applicationId: input.applicationId,
     eventType,
     payload: {
@@ -119,7 +119,7 @@ async function applyInboxMessageWorkflow(input: {
     },
   });
 
-  const application = getApplicationRecord(input.applicationId);
+  const application = await getApplicationRecord(input.applicationId);
 
   const nextStatus =
     input.messageType === "interview"
@@ -133,11 +133,11 @@ async function applyInboxMessageWorkflow(input: {
           : null;
 
   if (nextStatus) {
-    updateApplicationRecord(input.applicationId, {
+    await updateApplicationRecord(input.applicationId, {
       status: nextStatus,
     });
 
-    updateJobRecord(input.jobId, {
+    await updateJobRecord(input.jobId, {
       currentStage:
         nextStatus === "interview"
           ? "interview"
@@ -149,7 +149,7 @@ async function applyInboxMessageWorkflow(input: {
   }
 
   if (input.autoCreateReminder && input.messageType !== "confirmation") {
-    createReminderRecord({
+    await createReminderRecord({
       applicationId: input.applicationId,
       jobId: input.jobId,
       title: `Review inbox message: ${input.subject}`,
@@ -193,7 +193,7 @@ export async function linkInboxMessageToApplication(input: {
     };
   }
 
-  const application = getApplicationRecord(input.applicationId);
+  const application = await getApplicationRecord(input.applicationId);
   if (!application) {
     return {
       ok: false as const,

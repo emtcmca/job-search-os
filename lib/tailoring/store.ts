@@ -7,7 +7,7 @@ import {
   updateJobRecord,
 } from "@/lib/applications/store";
 import { db } from "@/lib/db/client";
-import { insertRecord } from "@/lib/db/store-helpers";
+import { insertRecordAsync } from "@/lib/db/store-helpers";
 import { aiBudgetSettings, aiUsageEvents } from "@/lib/db/schema/integrations";
 import { generatedDocuments } from "@/lib/db/schema/profiles";
 
@@ -16,14 +16,14 @@ function monthStartIso() {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 }
 
-export function getTailoringBudgetContext() {
-  const settings = db
+export async function getTailoringBudgetContext() {
+  const settings = await db
     .select()
     .from(aiBudgetSettings)
     .where(eq(aiBudgetSettings.id, 1))
     .get();
 
-  const monthlySpendRow = db
+  const monthlySpendRow = await db
     .select({
       spent: sql<number>`coalesce(sum(${aiUsageEvents.actualCost}), 0)`,
     })
@@ -37,8 +37,8 @@ export function getTailoringBudgetContext() {
   };
 }
 
-export function getNextGeneratedDocumentVersion(jobId: number, documentType: string) {
-  const latest = db
+export async function getNextGeneratedDocumentVersion(jobId: number, documentType: string) {
+  const latest = await db
     .select()
     .from(generatedDocuments)
     .where(
@@ -50,43 +50,43 @@ export function getNextGeneratedDocumentVersion(jobId: number, documentType: str
   return (latest?.version ?? 0) + 1;
 }
 
-export function createGeneratedDocuments(
+export async function createGeneratedDocuments(
   values: Array<typeof generatedDocuments.$inferInsert>,
 ) {
-  insertRecord(generatedDocuments, values);
+  await insertRecordAsync(generatedDocuments, values);
 }
 
-export function getTailoringApplication(jobId: number) {
-  return getApplicationRecordForJob(jobId);
+export async function getTailoringApplication(jobId: number) {
+  return await getApplicationRecordForJob(jobId);
 }
 
-export function updateTailoringApplication(
+export async function updateTailoringApplication(
   applicationId: number,
   values: Partial<typeof import("@/lib/db/schema/workflow").applications.$inferInsert>,
 ) {
-  updateApplicationRecord(applicationId, values);
+  await updateApplicationRecord(applicationId, values);
 }
 
-export function logTailoringApplicationEvent(input: {
+export async function logTailoringApplicationEvent(input: {
   applicationId: number;
   payload: unknown;
 }) {
-  createApplicationEvent({
+  await createApplicationEvent({
     applicationId: input.applicationId,
     eventType: "drafts_linked",
     payload: input.payload,
   });
 }
 
-export function updateTailoringJobStage(
+export async function updateTailoringJobStage(
   jobId: number,
   values: Partial<typeof import("@/lib/db/schema/jobs").jobs.$inferInsert>,
 ) {
-  updateJobRecord(jobId, values);
+  await updateJobRecord(jobId, values);
 }
 
-export function logTailoringUsageEvent(
+export async function logTailoringUsageEvent(
   values: typeof aiUsageEvents.$inferInsert,
 ) {
-  insertRecord(aiUsageEvents, values);
+  await insertRecordAsync(aiUsageEvents, values);
 }

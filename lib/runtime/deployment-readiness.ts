@@ -18,7 +18,7 @@ export function getDeploymentReadinessReport() {
   const hostedTarget = getHostedDatabaseTargetStatus();
   const gmailSetup = getGmailSetupStatus();
   const generatedAt = new Date().toISOString();
-  const hostedReadRuntimeReady =
+  const hostedRuntimeReady =
     runtime.database.kind === "libsql_hosted" || (!runtime.isHosted && hostedTarget.ready);
 
   const items: DeploymentReadinessItem[] = [
@@ -53,15 +53,15 @@ export function getDeploymentReadinessReport() {
     {
       key: "hosted_runtime",
       label: "Hosted app runtime",
-      level: hostedReadRuntimeReady
+      level: hostedRuntimeReady
         ? "ready"
         : runtime.isHosted && runtime.database.kind === "sqlite_file"
           ? "attention"
           : "blocked",
       message: runtime.database.kind === "libsql_hosted"
-        ? "This hosted runtime is already reading from durable LibSQL/Turso storage. Hosted write actions remain disabled until the remaining mutation flows finish migrating."
+        ? "This hosted runtime is already using durable LibSQL/Turso storage for persisted reads and writes."
         : hostedTarget.ready
-          ? "The deployed Vercel runtime is now configured to read from durable LibSQL/Turso storage. The remaining deployment slice is migrating hosted write actions off the local SQLite call shape."
+          ? "The deployed Vercel runtime is configured to use durable LibSQL/Turso storage once the latest deploy is live."
         : runtime.isHosted && runtime.database.kind === "sqlite_file"
           ? "The hosted preview can run on ephemeral /tmp SQLite storage, but it is still not durable. Treat it as UI testing only until the live runtime switches to hosted persistence."
           : "The live app still runs on local SQLite. After the hosted database is migrated and synced, the next slice is switching the runtime itself over to hosted persistence.",
@@ -79,11 +79,11 @@ export function getDeploymentReadinessReport() {
       label: "Hosted Gmail readiness",
       level:
         hostedTarget.ready && gmailSetup.configured && runtime.hasExplicitAppUrl
-          ? "attention"
+          ? "ready"
           : "blocked",
       message:
         hostedTarget.ready && gmailSetup.configured && runtime.hasExplicitAppUrl
-          ? "The prerequisites are in place to move Gmail toward hosted use after the runtime database refactor."
+          ? "Hosted Gmail prerequisites are configured for the web deployment."
           : "Hosted Gmail is not ready until the hosted database target, APP_URL, and Google OAuth credentials are all configured.",
     },
     {
@@ -105,9 +105,6 @@ export function getDeploymentReadinessReport() {
     nextSteps.push("Run npm run db:push:hosted.");
   } else {
     nextSteps.push("Redeploy or refresh the Vercel project so the hosted runtime picks up the Turso configuration.");
-    nextSteps.push(
-      "Continue migrating hosted write actions off the local SQLite call shape so durable mutations can be enabled.",
-    );
   }
 
   if (!runtime.hasExplicitAppUrl) {

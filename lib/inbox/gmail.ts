@@ -59,7 +59,9 @@ export function getGmailSetupStatus() {
     !process.env.GOOGLE_CLIENT_SECRET ? "GOOGLE_CLIENT_SECRET" : null,
     runtime.isHosted && !runtime.hasExplicitAppUrl ? "APP_URL" : null,
   ].filter(Boolean) as string[];
-  const storageReady = !runtime.isHosted && runtime.database.kind === "sqlite_file";
+  const storageReady =
+    runtime.database.kind === "libsql_hosted" ||
+    (!runtime.isHosted && runtime.database.kind === "sqlite_file");
   const readyForLiveSync = missingVars.length === 0 && storageReady;
 
   return {
@@ -72,7 +74,9 @@ export function getGmailSetupStatus() {
     runtimeLabel: runtime.runtimeLabel,
     appBaseUrlMessage: runtime.appBaseUrlMessage,
     storageMessage: storageReady
-      ? "Gmail tokens and sync state can be stored safely in the local SQLite workspace on this machine."
+      ? runtime.database.kind === "libsql_hosted"
+        ? "Gmail tokens and sync state can be stored safely in the hosted LibSQL/Turso database for this deployment."
+        : "Gmail tokens and sync state can be stored safely in the local SQLite workspace on this machine."
       : "Gmail live sync is blocked here because the running app still uses local SQLite storage. Use the hosted migration scripts first, then switch the runtime in a later slice.",
   };
 }
