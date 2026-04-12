@@ -1,0 +1,52 @@
+{
+  "name": "job-search",
+  "version": "1.0.0",
+  "description": "Local-first job search operating system with AI-assisted scoring, tailoring, and workflow tracking.",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:migrate:hosted": "tsx scripts/migrate-hosted.ts",
+    "db:push:hosted": "tsx scripts/push-hosted-data.ts",
+    "deployment:check": "tsx scripts/check-deployment-readiness.ts",
+    "deployment:inventory": "tsx scripts/report-runtime-cutover.ts",
+    "smoke:tier1": "tsx scripts/smoke-tier1.ts",
+    "smoke:ats-boards": "tsx scripts/smoke-ats-boards.ts",
+    "smoke:browser-source": "tsx scripts/smoke-browser-source.ts",
+    "inspect:browser-source": "tsx scripts/inspect-browser-source.ts",
+    "browser:launch:attach": "powershell -ExecutionPolicy Bypass -File scripts/launch-job-search-browser.ps1",
+    "searches:run": "tsx scripts/run-saved-searches.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@libsql/client": "^0.17.2",
+    "better-sqlite3": "^12.8.0",
+    "drizzle-orm": "^0.45.2",
+    "next": "^16.2.3",
+    "openai": "^6.34.0",
+    "playwright-core": "^1.59.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.3",
+    "tailwindcss": "^4.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

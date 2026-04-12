@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+dist
+coverage
+*.log
+.env
+.env.local
+.env.*.local
+tmp
+output
+*.sqlite
+*.db
+*.sqlite-shm
+*.sqlite-wal
+tsconfig.tsbuildinfo
