@@ -7,7 +7,8 @@ import {
 const gmailAuthBaseUrl = "https://accounts.google.com/o/oauth2/v2/auth";
 const gmailTokenUrl = "https://oauth2.googleapis.com/token";
 const gmailApiBaseUrl = "https://gmail.googleapis.com/gmail/v1/users/me";
-const defaultSyncQuery = "newer_than:30d";
+const defaultSyncQuery =
+  'newer_than:14d {application interview recruiter recruiting talent hiring candidate role position "next steps" "thank you for applying"} -category:promotions -category:social -category:forums';
 const gmailScope = "https://www.googleapis.com/auth/gmail.readonly";
 
 type GmailTokenResponse = {
@@ -79,6 +80,10 @@ export function getGmailSetupStatus() {
         : "Gmail tokens and sync state can be stored safely in the local SQLite workspace on this machine."
       : "Gmail live sync is blocked here because the running app still uses local SQLite storage. Use the hosted migration scripts first, then switch the runtime in a later slice.",
   };
+}
+
+export function getRecommendedGmailSyncQuery() {
+  return defaultSyncQuery;
 }
 
 function getGmailClientId() {

@@ -12,7 +12,7 @@ import { InfoCard } from "@/components/ui/info-card";
 import { PageFrame } from "@/components/ui/page-frame";
 import { ReadOnlyNotice } from "@/components/ui/read-only-notice";
 import { ensureDefaultRecords } from "@/lib/bootstrap/ensure-defaults";
-import { getGmailSetupStatus } from "@/lib/inbox/gmail";
+import { getGmailSetupStatus, getRecommendedGmailSyncQuery } from "@/lib/inbox/gmail";
 import {
   getInboxConnection,
   getInboxSummary,
@@ -37,6 +37,7 @@ export default async function InboxSettingsPage({
   await ensureDefaultRecords();
   const params = searchParams ? await searchParams : undefined;
   const gmailSetup = getGmailSetupStatus();
+  const recommendedSyncQuery = getRecommendedGmailSyncQuery();
   const runtime = getRuntimeEnvironmentSummary();
   const hostedTarget = getHostedDatabaseTargetStatus();
   const mutationStatus = getHostedPreviewMutationStatus();
@@ -171,6 +172,9 @@ export default async function InboxSettingsPage({
                 className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2"
               />
             </label>
+            <div className="rounded-xl border border-[var(--border)] bg-white/70 px-3 py-3 text-xs leading-6 text-[var(--muted)]">
+              Recommended starter query: <span className="font-mono">{recommendedSyncQuery}</span>
+            </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="rounded-xl border border-[var(--border)] bg-white/70 p-3 text-sm">

@@ -4,6 +4,7 @@ import {
   buildGmailAuthUrl,
   exchangeGmailCodeForTokens,
   fetchGmailProfile,
+  getRecommendedGmailSyncQuery,
   getGmailSetupStatus,
 } from "@/lib/inbox/gmail";
 import {
@@ -30,7 +31,7 @@ export async function updateInboxConnectionSettings(input: {
     isEnabled: input.isEnabled,
     autoCreateReminders: input.autoCreateReminders,
     notifyOnEmployerReplies: input.notifyOnEmployerReplies,
-    syncQuery: input.syncQuery || "newer_than:30d",
+    syncQuery: input.syncQuery || getRecommendedGmailSyncQuery(),
     notes: input.notes || null,
     updatedAt: new Date().toISOString(),
   });
