@@ -34,8 +34,56 @@ type InboxCaptureInput = {
   threadId?: string;
 };
 
+const companySuffixTokens = new Set([
+  "co",
+  "company",
+  "corp",
+  "corporation",
+  "inc",
+  "incorporated",
+  "llc",
+  "ltd",
+  "limited",
+  "group",
+  "holdings",
+  "services",
+  "systems",
+  "solutions",
+  "technologies",
+  "technology",
+  "tech",
+]);
+
+const titleStopwords = new Set([
+  "and",
+  "for",
+  "from",
+  "into",
+  "lead",
+  "manager",
+  "of",
+  "role",
+  "senior",
+  "staff",
+  "team",
+  "the",
+  "with",
+]);
+
 function normalize(value: string) {
   return value.toLowerCase();
+}
+
+function tokenize(value: string) {
+  return normalize(value)
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+function uniqueTokens(tokens: string[]) {
+  return Array.from(new Set(tokens));
 }
 
 function compactText(input: InboxCaptureInput) {
@@ -44,11 +92,61 @@ function compactText(input: InboxCaptureInput) {
   );
 }
 
+function extractSenderDomain(senderEmail: string) {
+  return normalize(senderEmail.split("@")[1] ?? "");
+}
+
+function companyTokens(name: string | null | undefined) {
+  return uniqueTokens(
+    tokenize(name ?? "").filter(
+      (token) => token.length > 2 && !companySuffixTokens.has(token),
+    ),
+  );
+}
+
+function titleTokens(title: string | null | undefined) {
+  return uniqueTokens(
+    tokenize(title ?? "").filter(
+      (token) => token.length > 2 && !titleStopwords.has(token),
+    ),
+  );
+}
+
+function countTokenMatches(haystack: string, tokens: string[]) {
+  return tokens.reduce((count, token) => count + (haystack.includes(token) ? 1 : 0), 0);
+}
+
+function hasDomainTokenMatch(senderEmail: string, tokens: string[]) {
+  const senderDomain = extractSenderDomain(senderEmail);
+  return tokens.some((token) => token.length > 2 && senderDomain.includes(token));
+}
+
+export function isLikelyJobSearchMessage(input: InboxCaptureInput) {
+  const haystack = compactText(input);
+  const senderDomain = extractSenderDomain(input.senderEmail);
+
+  const positiveSignals = [
+    /(application|candidate|career|hiring|interview|job|next steps|position|recruit|role|talent)/,
+    /(ashby|bamboohr|dayforce|getro|greenhouse|icims|jobvite|lever|smartrecruiters|workday)/,
+  ];
+  const negativeSignals = [
+    /(cart|coupon|discount|donation|order update|receipt|rewards|sale ends|security alert|shipping|unsubscribe|verify your email|welcome to)/,
+    /(accounts\.google\.com|dunkin|microsoft\.com|solostove)/,
+  ];
+
+  const positiveMatch = positiveSignals.some((pattern) => pattern.test(haystack));
+  const negativeMatch = negativeSignals.some(
+    (pattern) => pattern.test(haystack) || pattern.test(senderDomain),
+  );
+
+  return positiveMatch || !negativeMatch;
+}
+
 export function classifyInboxMessage(input: InboxCaptureInput): InboxMessageType {
   const haystack = compactText(input);
 
   if (
-    /(interview|phone screen|hiring manager|availability|schedule time|calendar|zoom|meet with)/.test(
+    /(interview|phone screen|screening call|hiring manager|availability|schedule time|calendar|zoom|meet with|meet the team|onsite|on-site|take-home)/.test(
       haystack,
     )
   ) {
@@ -56,7 +154,7 @@ export function classifyInboxMessage(input: InboxCaptureInput): InboxMessageType
   }
 
   if (
-    /(regret to inform|unfortunately|not moving forward|other candidates|decline to move|rejection)/.test(
+    /(regret to inform|unfortunately|not moving forward|other candidates|decline to move|rejection|won't be moving forward|unable to move ahead)/.test(
       haystack,
     )
   ) {
@@ -64,7 +162,7 @@ export function classifyInboxMessage(input: InboxCaptureInput): InboxMessageType
   }
 
   if (
-    /(application received|thanks for applying|thank you for applying|received your application|application has been received|submission confirmation)/.test(
+    /(application received|application submitted|application has been received|received your application|submission confirmation|thank you for applying|thanks for applying|thank you for your interest)/.test(
       haystack,
     )
   ) {
@@ -72,7 +170,7 @@ export function classifyInboxMessage(input: InboxCaptureInput): InboxMessageType
   }
 
   if (
-    /(next steps|follow up|following up|would love to chat|please reply|reach out|question about your application|recruiter)/.test(
+    /(next steps|follow up|following up|our team|please reply|question about your application|recruiter|reviewed your application|would love to chat|would like to chat|would like to schedule|like to move forward)/.test(
       haystack,
     )
   ) {
@@ -228,13 +326,6 @@ export async function linkInboxMessageToApplication(input: {
   };
 }
 
-function companyToken(name: string | null | undefined) {
-  return (name ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
 async function inferMatch(input: InboxCaptureInput) {
   const haystack = compactText(input);
   const applicationRows = await listInboxMatchCandidates();
@@ -255,22 +346,25 @@ async function inferMatch(input: InboxCaptureInput) {
     let score = 0;
 
     const normalizedTitle = normalize(application.jobTitle);
-    const normalizedCompany = companyToken(application.companyName);
+    const normalizedCompany = normalize(application.companyName ?? "");
     const senderEmail = normalize(input.senderEmail);
+    const companyNameTokens = companyTokens(application.companyName);
+    const jobTitleTokens = titleTokens(application.jobTitle);
 
     if (normalizedTitle && haystack.includes(normalizedTitle)) {
       score += 4;
+    } else {
+      score += Math.min(3, countTokenMatches(haystack, jobTitleTokens));
     }
 
     if (normalizedCompany && haystack.includes(normalizedCompany)) {
       score += 4;
+    } else {
+      score += Math.min(3, countTokenMatches(haystack, companyNameTokens));
     }
 
-    if (
-      normalizedCompany &&
-      normalizedCompany.split(" ").some((token) => token.length > 3 && senderEmail.includes(token))
-    ) {
-      score += 2;
+    if (hasDomainTokenMatch(senderEmail, companyNameTokens)) {
+      score += 3;
     }
 
     if (
@@ -289,7 +383,7 @@ async function inferMatch(input: InboxCaptureInput) {
     }
   }
 
-  return best && best.score >= 4 ? best : null;
+  return best && best.score >= 5 ? best : null;
 }
 
 export async function ingestInboxMessage(input: InboxCaptureInput) {

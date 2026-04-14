@@ -8,7 +8,7 @@ import {
   listGmailMessages,
   parseGmailSender,
 } from "@/lib/inbox/gmail";
-import { ingestInboxMessage } from "@/lib/inbox/ingest";
+import { ingestInboxMessage, isLikelyJobSearchMessage } from "@/lib/inbox/ingest";
 import { getInboxConnection } from "@/lib/inbox/queries";
 import { updateInboxConnectionRecord } from "@/lib/inbox/store";
 
@@ -46,6 +46,7 @@ export async function syncGmailInbox() {
 
     let imported = 0;
     let duplicates = 0;
+    let filtered = 0;
     let matched = 0;
     let latestReceivedAt: string | null = null;
 
@@ -59,7 +60,7 @@ export async function syncGmailInbox() {
         continue;
       }
 
-      const result = await ingestInboxMessage({
+      const candidateInput = {
         senderName: sender.senderName,
         senderEmail: sender.senderEmail,
         subject,
@@ -71,7 +72,14 @@ export async function syncGmailInbox() {
         sourceProvider: "gmail",
         externalMessageId: message.id,
         threadId: message.threadId,
-      });
+      };
+
+      if (!isLikelyJobSearchMessage(candidateInput)) {
+        filtered += 1;
+        continue;
+      }
+
+      const result = await ingestInboxMessage(candidateInput);
 
       if (result.duplicate) {
         duplicates += 1;
@@ -103,7 +111,7 @@ export async function syncGmailInbox() {
 
     return {
       ok: true as const,
-      message: `Gmail sync complete. ${imported} imported, ${duplicates} duplicates skipped, ${matched} matched.`,
+      message: `Gmail sync complete. ${imported} imported, ${duplicates} duplicates skipped, ${filtered} filtered out, ${matched} matched.`,
     };
   } catch (error) {
     const message =
