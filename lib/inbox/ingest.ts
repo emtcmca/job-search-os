@@ -1,7 +1,10 @@
 import {
   createApplicationEvent,
+  createApplicationRecord,
   createReminderRecord,
   getApplicationRecord,
+  getApplicationRecordForJob,
+  getJobRecord,
   updateApplicationRecord,
   updateJobRecord,
 } from "@/lib/applications/store";
@@ -323,6 +326,99 @@ export async function linkInboxMessageToApplication(input: {
   return {
     ok: true as const,
     message: "Inbox message linked to an application.",
+  };
+}
+
+export async function linkInboxMessageToJob(input: {
+  inboxMessageId: number;
+  jobId: number;
+}) {
+  const connection = await getInboxConnectionRecord();
+  const message = await getInboxMessageRecord(input.inboxMessageId);
+  if (!message) {
+    return {
+      ok: false as const,
+      message: "Inbox message not found.",
+    };
+  }
+
+  const job = await getJobRecord(input.jobId);
+  if (!job) {
+    return {
+      ok: false as const,
+      message: "Job record not found.",
+    };
+  }
+
+  const existingApplication = await getApplicationRecordForJob(job.id);
+  const inferredStatus =
+    message.messageType === "interview"
+      ? "interview"
+      : message.messageType === "rejection"
+        ? "closed"
+        : ["confirmation", "employer_reply"].includes(message.messageType)
+          ? "applied"
+          : "new";
+
+  const applicationId =
+    existingApplication?.id ??
+    (await createApplicationRecord({
+      jobId: job.id,
+      status: inferredStatus,
+      submittedAt:
+        inferredStatus === "applied" || inferredStatus === "interview" || inferredStatus === "closed"
+          ? message.receivedAt
+          : null,
+      notes: "Created from an inbox message in the inbox workspace.",
+    }));
+
+  if (!applicationId) {
+    return {
+      ok: false as const,
+      message: "Application could not be created for that job.",
+    };
+  }
+
+  await updateInboxMessageRecord(message.id, {
+    applicationId,
+    jobId: job.id,
+    matchedStatus: "matched",
+    processingNotes: existingApplication
+      ? "Linked to an existing application record from the inbox workspace."
+      : "Created and linked an application record from the inbox workspace.",
+  });
+
+  if (!existingApplication && inferredStatus !== "new") {
+    await updateJobRecord(job.id, {
+      currentStage:
+        inferredStatus === "interview"
+          ? "interview"
+          : inferredStatus === "closed"
+            ? "closed"
+            : "applied",
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  await applyInboxMessageWorkflow({
+    applicationId,
+    jobId: job.id,
+    messageType: message.messageType as InboxMessageType,
+    subject: message.subject,
+    senderName: message.senderName ?? undefined,
+    senderEmail: message.senderEmail,
+    details: message.bodyText ?? message.snippet,
+    occurredAtIso: message.receivedAt,
+    inboxMessageId: message.id,
+    source: existingApplication ? "inbox_job_link_existing_application" : "inbox_job_link",
+    autoCreateReminder: connection?.autoCreateReminders,
+  });
+
+  return {
+    ok: true as const,
+    message: existingApplication
+      ? "Inbox message linked to the job's existing application."
+      : "Inbox message linked to the job and a new application was created.",
   };
 }
 

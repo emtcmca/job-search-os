@@ -1,5 +1,6 @@
 import {
   getInboxConnectionRecord,
+  listInboxJobLinkOptionRows,
   listInboxLinkOptionRows,
   listInboxMessageRows,
 } from "@/lib/inbox/store";
@@ -26,6 +27,15 @@ export async function listInboxLinkOptions() {
     applicationId: row.applicationId,
     jobId: row.jobId,
     label: `${row.companyName ?? "Unknown company"} | ${row.jobTitle ?? "Unknown job"} | ${row.applicationStatus}`,
+  }));
+}
+
+export async function listInboxJobLinkOptions() {
+  const rows = await listInboxJobLinkOptionRows();
+
+  return rows.map((row) => ({
+    jobId: row.jobId,
+    label: `${row.companyName ?? "Unknown company"} | ${row.jobTitle ?? "Unknown job"} | ${row.jobStage}`,
   }));
 }
 

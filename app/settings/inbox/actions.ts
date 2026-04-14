@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import {
   ingestInboxMessage,
+  linkInboxMessageToJob,
   linkInboxMessageToApplication,
   markInboxMessageReviewed,
 } from "@/lib/inbox/ingest";
@@ -184,6 +185,40 @@ export async function linkInboxMessageToApplicationAction(formData: FormData) {
           applicationId,
         })
       : { ok: false as const, message: "Select an application before linking this inbox message." };
+
+  revalidatePath(inboxSettingsPath);
+  revalidatePath("/");
+  revalidatePath("/applications");
+  revalidatePath("/jobs");
+
+  redirect(
+    `${inboxSettingsPath}?status=${result.ok ? "success" : "error"}&message=${encodeURIComponent(
+      result.message,
+    )}` as never,
+  );
+}
+
+export async function linkInboxMessageToJobAction(formData: FormData) {
+  const inboxMessageId = Number(formData.get("inboxMessageId"));
+  const jobId = Number(formData.get("jobId"));
+  const blockedRedirect = getHostedPreviewWriteRedirect(
+    inboxSettingsPath,
+    "link inbox messages to jobs",
+  );
+  if (blockedRedirect) {
+    redirect(blockedRedirect as never);
+  }
+
+  const result =
+    Number.isFinite(inboxMessageId) &&
+    inboxMessageId > 0 &&
+    Number.isFinite(jobId) &&
+    jobId > 0
+      ? await linkInboxMessageToJob({
+          inboxMessageId,
+          jobId,
+        })
+      : { ok: false as const, message: "Select a job before linking this inbox message." };
 
   revalidatePath(inboxSettingsPath);
   revalidatePath("/");

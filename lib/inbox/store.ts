@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, or } from "drizzle-orm";
+import { and, desc, eq, isNull, ne, or } from "drizzle-orm";
 
 import {
   insertRecordReturningAsync,
@@ -129,6 +129,34 @@ export async function listInboxLinkOptionRows() {
     applicationId: number;
     jobId: number;
     applicationStatus: string;
+    jobTitle: string | null;
+    companyName: string | null;
+  }>;
+}
+
+export async function listInboxJobLinkOptionRows() {
+  return (await selectAllWithBuilderAsync((database) =>
+    database
+      .select({
+        jobId: jobs.id,
+        jobStage: jobs.currentStage,
+        jobTitle: jobs.title,
+        companyName: companies.name,
+      })
+      .from(jobs)
+      .leftJoin(companies, eq(companies.id, jobs.companyId))
+      .leftJoin(applications, eq(applications.jobId, jobs.id))
+      .where(
+        and(
+          isNull(applications.id),
+          eq(jobs.isRejected, false),
+          ne(jobs.currentStage, "closed"),
+        ),
+      )
+      .orderBy(desc(jobs.discoveredAt)),
+  )) as Array<{
+    jobId: number;
+    jobStage: string;
     jobTitle: string | null;
     companyName: string | null;
   }>;

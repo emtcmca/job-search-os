@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   captureInboxMessageAction,
   disconnectGmailInboxAction,
+  linkInboxMessageToJobAction,
   linkInboxMessageToApplicationAction,
   markInboxMessageReviewedAction,
   syncGmailInboxAction,
@@ -15,6 +16,7 @@ import { ensureDefaultRecords } from "@/lib/bootstrap/ensure-defaults";
 import { getGmailSetupStatus, getRecommendedGmailSyncQuery } from "@/lib/inbox/gmail";
 import {
   getInboxConnection,
+  listInboxJobLinkOptions,
   getInboxSummary,
   listInboxLinkOptions,
 } from "@/lib/inbox/queries";
@@ -41,10 +43,11 @@ export default async function InboxSettingsPage({
   const runtime = getRuntimeEnvironmentSummary();
   const hostedTarget = getHostedDatabaseTargetStatus();
   const mutationStatus = getHostedPreviewMutationStatus();
-  const [connection, summary, linkOptions] = await Promise.all([
+  const [connection, summary, linkOptions, jobLinkOptions] = await Promise.all([
     getInboxConnection(),
     getInboxSummary(),
     listInboxLinkOptions(),
+    listInboxJobLinkOptions(),
   ]);
   const isGmailProvider = connection?.provider === "gmail";
   const isGmailConnected =
@@ -524,6 +527,38 @@ export default async function InboxSettingsPage({
                       </button>
                     </div>
                   </form>
+                  <form
+                    action={linkInboxMessageToJobAction}
+                    className="mt-3 flex flex-col gap-3"
+                  >
+                    <input type="hidden" name="inboxMessageId" value={message.id} />
+                    <select
+                      name="jobId"
+                      defaultValue=""
+                      className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2"
+                    >
+                      <option value="" disabled>
+                        Create application from job...
+                      </option>
+                      {jobLinkOptions.map((option) => (
+                        <option key={option.jobId} value={option.jobId}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="submit"
+                      disabled={!mutationStatus.writesAllowed}
+                      className="rounded-xl border border-[var(--accent)] bg-[var(--accent-soft)] px-4 py-2 font-medium text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Create application and link
+                    </button>
+                  </form>
+                  {linkOptions.length === 0 ? (
+                    <div className="mt-3 rounded-xl border border-dashed border-[var(--border)] px-3 py-2 text-xs leading-6 text-[var(--muted)]">
+                      No application records exist yet, so Gmail cannot auto-match replies on its own. Use the job linker to create the first application record from a known job.
+                    </div>
+                  ) : null}
                 </div>
               ))
             )}
