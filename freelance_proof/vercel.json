@@ -1,0 +1,56 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/workflow-audit",
+      "destination": "/workflow-audit-brief.html",
+      "permanent": true
+    },
+    {
+      "source": "/workflow-audit.html",
+      "destination": "/workflow-audit-brief.html",
+      "permanent": true
+    },
+    {
+      "source": "/sop-sprint",
+      "destination": "/sop-sprint-brief.html",
+      "permanent": true
+    },
+    {
+      "source": "/sop-sprint.html",
+      "destination": "/sop-sprint-brief.html",
+      "permanent": true
+    },
+    {
+      "source": "/hoa-operations",
+      "destination": "/hoa-operations-brief.html",
+      "permanent": true
+    },
+    {
+      "source": "/hoa-operations.html",
+      "destination": "/hoa-operations-brief.html",
+      "permanent": true
+    },
+    {
+      "source": "/systems-transition",
+      "destination": "/systems-transition-brief.html",
+      "permanent": true
+    },
+    {
+      "source": "/systems-transition.html",
+      "destination": "/systems-transition-brief.html",
+      "permanent": true
+    }
+  ]
+}
+

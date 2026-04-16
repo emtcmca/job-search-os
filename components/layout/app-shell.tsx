@@ -1,13 +1,15 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
-import { primaryRoutes } from "@/lib/navigation";
+import { RouteNav } from "@/components/layout/route-nav";
+import { getInboxSummary } from "@/lib/inbox/queries";
+import { getPrimaryRoutes } from "@/lib/navigation";
 
-export function AppShell({ children }: PropsWithChildren) {
-  const pathname = usePathname();
+export async function AppShell({ children }: PropsWithChildren) {
+  const inboxSummary = await getInboxSummary();
+  const primaryRoutes = getPrimaryRoutes({
+    inboxAttentionCount: inboxSummary.unreviewedActionable,
+  });
 
   return (
     <div className="min-h-screen px-4 py-6 sm:px-6 lg:px-10">
@@ -27,31 +29,7 @@ export function AppShell({ children }: PropsWithChildren) {
               </p>
             </div>
 
-            <nav className="space-y-2">
-              {primaryRoutes.map((route) => {
-                const isActive =
-                  route.href === "/"
-                    ? pathname === route.href
-                    : pathname.startsWith(route.href);
-
-                return (
-                  <Link
-                    key={route.href}
-                    href={route.href}
-                    className={`block rounded-2xl border px-4 py-3 transition ${
-                      isActive
-                        ? "border-[var(--accent)] bg-[var(--accent-soft)]"
-                        : "border-transparent bg-white/50 hover:border-[var(--border)] hover:bg-white/80"
-                    }`}
-                  >
-                    <div className="font-medium">{route.label}</div>
-                    <div className="mt-1 text-sm leading-5 text-[var(--muted)]">
-                      {route.description}
-                    </div>
-                  </Link>
-                );
-              })}
-            </nav>
+            <RouteNav routes={primaryRoutes} />
 
             <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">
@@ -71,4 +49,3 @@ export function AppShell({ children }: PropsWithChildren) {
     </div>
   );
 }
-

@@ -23,6 +23,11 @@ if (runtime.database.kind === "sqlite_file") {
   const databasePath = resolveSqliteDatabasePath();
   mkdirSync(dirname(databasePath), { recursive: true });
   sqliteDatabase = new Database(databasePath);
+  // OneDrive-backed workspaces can throw SQLITE_IOERR_DELETE when SQLite tries to
+  // remove rollback journal files. PERSIST keeps the journal file in place.
+  sqliteDatabase.pragma("busy_timeout = 5000");
+  sqliteDatabase.pragma("journal_mode = PERSIST");
+  sqliteDatabase.pragma("synchronous = NORMAL");
 } else if (runtime.database.kind === "libsql_hosted" && hostedTarget.url) {
   libsqlClient = createClient({
     url: hostedTarget.url,

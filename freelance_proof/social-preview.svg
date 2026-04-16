@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Eric Tetzlaff social preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7f2ea" />
+      <stop offset="54%" stop-color="#edf4f4" />
+      <stop offset="100%" stop-color="#fff8ef" />
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#18434b" />
+      <stop offset="52%" stop-color="#2f6c76" />
+      <stop offset="100%" stop-color="#b1824d" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" rx="30" fill="url(#bg)" />
+  <rect x="28" y="24" width="1144" height="8" rx="4" fill="url(#bar)" />
+  <rect x="60" y="70" width="1080" height="490" rx="30" fill="#fffdfa" fill-opacity="0.7" stroke="#d6dfdf" />
+  <rect x="96" y="108" width="86" height="86" rx="22" fill="#edf4f3" stroke="#c7d7d8" />
+  <text x="139" y="162" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="44" font-weight="700" fill="#18434b">ET</text>
+  <text x="220" y="142" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700" fill="#1f2b2e">Eric Tetzlaff</text>
+  <text x="220" y="184" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="2" fill="#607177">OPERATIONS AND WORKFLOW CONSULTANT</text>
+  <text x="96" y="274" font-family="Georgia, 'Times New Roman', serif" font-size="82" font-weight="700" fill="#1f2b2e">Clear the workflow drag</text>
+  <text x="96" y="354" font-family="Georgia, 'Times New Roman', serif" font-size="82" font-weight="700" fill="#1f2b2e">before it costs momentum.</text>
+  <text x="96" y="430" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#607177">Workflow cleanup, process documentation, HOA operations, and practical automation.</text>
+  <rect x="96" y="474" width="356" height="64" rx="32" fill="#18434b" />
+  <text x="274" y="515" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#f8fbfb">Practical systems for real teams</text>
+</svg>

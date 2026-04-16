@@ -1,0 +1,18 @@
+.vercel/
+
+# Local visual review artifacts
+good-fit-fix.png
+header-polish-*.png
+home-polish-*.png
+home-proof-*.png
+homepage-*.png
+hoa-proof-*.png
+review-*.png
+sop-pass.png
+systems-pass.png
+type-tune-*.png
+workflow-audit-pass.png
+workflow-bestfit-fix.png
+
+
+.vercel
