@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bio Block Draft — Eric Tetzlaff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0F1C2E; padding: 3rem 1.5rem; font-family: 'DM Sans', sans-serif; }
+
+:root {
+  --slate: #0F1C2E;
+  --steel: #1B2A3B;
+  --copper: #B87333;
+  --copper-light: #D4924A;
+  --cream: #F5F0E8;
+  --cream-dim: #C8C0B0;
+  --gray: #8A96A3;
+  --rule: rgba(184,115,51,0.25);
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin: 0 0 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ══════════════════════════════════════
+   LONG-FORM BIO
+══════════════════════════════════════ */
+.bio-long {
+  max-width: 740px;
+  margin: 0 auto 5rem;
+}
+
+.bio-long-inner {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0 3rem;
+  align-items: start;
+}
+
+/* Avatar placeholder */
+.avatar-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 4px;
+  background: var(--steel);
+  border: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.avatar-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  color: var(--cream);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.avatar-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--copper);
+  text-align: center;
+  line-height: 1.6;
+  margin-top: -0.5rem;
+}
+
+/* Bio text */
+.bio-text-block { }
+
+.bio-long-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin: 0 0 1rem;
+}
+
+.bio-long p {
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--cream-dim);
+  margin: 0 0 1.25rem;
+}
+
+.bio-long p:last-child { margin-bottom: 0; }
+
+.bio-long p em {
+  font-style: italic;
+  color: var(--cream);
+}
+
+.bio-long p strong {
+  font-weight: 500;
+  color: var(--cream);
+}
+
+.bio-rule {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 1.75rem 0;
+}
+
+/* ══════════════════════════════════════
+   SHORT-FORM BIO
+══════════════════════════════════════ */
+.bio-short-wrapper {
+  max-width: 740px;
+  margin: 0 auto;
+  padding-top: 4rem;
+  border-top: 1px solid var(--rule);
+}
+
+.bio-short-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin: 0 0 1.5rem;
+}
+
+.bio-short {
+  background: var(--steel);
+  border: 0.5px solid var(--rule);
+  border-radius: 6px;
+  padding: 1.75rem 2rem;
+}
+
+.bio-short p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--cream-dim);
+  margin: 0;
+}
+
+.bio-short p strong {
+  font-weight: 500;
+  color: var(--cream);
+}
+
+/* Use context tags */
+.use-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 1.25rem;
+}
+
+.use-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--gray);
+  background: rgba(138,150,163,0.1);
+  border: 0.5px solid rgba(138,150,163,0.2);
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+</style>
+</head>
+<body>
+
+<div style="max-width: 800px; margin: 0 auto;">
+
+  <p class="section-label">Bio Block Drafts — Long Form + Short Form &nbsp;·&nbsp; Eric Tetzlaff &nbsp;·&nbsp; May 2026</p>
+
+  <!-- ══ LONG FORM ══ -->
+  <div class="bio-long">
+    <div class="bio-long-inner">
+
+      <!-- Avatar column -->
+      <div class="avatar-block">
+        <div class="avatar">
+          <img src="https://erictetzlaff.com/eric-signature-headshot.png"
+               alt="Eric Tetzlaff"
+               onerror="this.parentElement.innerHTML='<span style=\'font-family:DM Sans,sans-serif;font-size:11px;color:#8A96A3;text-align:center;padding:1rem;\'>Headshot loads from erictetzlaff.com</span>'">
+        </div>
+        <div class="avatar-name">Eric Tetzlaff</div>
+        <div class="avatar-title">AI Systems Architect<br>Founder · BoardPath · Auris</div>
+      </div>
+
+      <!-- Text column -->
+      <div class="bio-text-block bio-long">
+        <p class="bio-long-kicker">About</p>
+
+        <p>For years, Eric Tetzlaff jokingly told people he ran an adult daycare. It got a laugh every time — and it wasn't entirely wrong. He spent over a decade managing homeowner and condominium associations, where governance gaps have a way of bringing out the worst in otherwise reasonable people. When documents are ambiguous, precedent is tribal, and no one in the room can agree on what the rules actually say, behavior fills the void that structure should have occupied.</p>
+
+        <p>What Eric eventually understood — and what nobody in the industry was talking about — was that the behavior wasn't the problem. <em>The information architecture was.</em></p>
+
+        <p>Over fourteen years managing hundreds of associations — as many as 34 at once — leading a 7-person team, and overseeing seven-figure operating budgets and $15M+ in reserve funds, Eric developed something unusual: a practitioner's intuition for how governing documents fail. Where authority hierarchies break down. Where amendment inheritance creates silent contradictions. Where the gap between what a corpus says and what a board needs to know becomes a liability — legal, financial, and operational.</p>
+
+        <hr class="bio-rule">
+
+        <p>That intuition became infrastructure when the right tools arrived. Eric was an early adopter of NotebookLM in beta — not as a productivity experiment, but as a deliberate attempt to solve a real problem he had been managing manually for years. He built siloed document corpora for each association he managed, constrained the system to cite only what existed, and — critically — gave it explicit permission to say <em>the corpus does not address this.</em> When it did, he didn't patch the gap with inference. He wrote amendments. He drafted board motion language. He built the documents that the system revealed were missing.</p>
+
+        <p>That feedback loop — retrieval surfaces the gap, human judgment closes it, corpus improves — became the architectural foundation of <strong>BoardPath</strong>, the governance intelligence platform Eric founded in 2026. BoardPath converts fragmented HOA and condominium governing documents into citation-grounded, meeting-ready answers, with a proprietary confidence scoring system that surfaces uncertainty, flags document conflicts, and never infers beyond what the corpus can defend. Where gaps exist, the platform doesn't simply report them — it characterizes them, flags their potential legal and operational risk, and offers boards a clear path toward resolution. The system that reveals what the corpus is missing becomes the system that helps close it.</p>
+
+        <p>Concurrently, Eric designed and built <strong>Auris Intelligence</strong>, a forensic legal document intelligence platform currently in active production use by a midsize regional corporate law firm for civil litigation defense preparation. Auris operates on a 110,000+ document corpus with SHA-256 chain-of-custody ingestion, a context-window-aware subagent scaffold designed to deliver signal-only inputs to an AI coordinator, and an output layer that produces attorney-ready case analysis, deposition preparation materials, and chain-of-custody attestations.</p>
+
+        <hr class="bio-rule">
+
+        <p>Eric's design philosophy is grounded in a conviction he arrived at the hard way: that the most important thing an AI system can do is know what it doesn't know — and say so clearly, before it says anything else. Transparency, retrievability, and honest uncertainty aren't features to be added after the architecture is designed. They are the architecture.</p>
+
+        <p>He builds systems that work the way good judgment works: from the ground up, stress-tested until they break, rebuilt until they don't, and handed to the people who need them with a clear account of exactly what they can and cannot be trusted to do.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ SHORT FORM ══ -->
+  <div class="bio-short-wrapper">
+    <p class="bio-short-label">Short Form &nbsp;·&nbsp; Use for: LinkedIn About section, speaker bios, press mentions, email footers, sidebar cards</p>
+
+    <div class="bio-short">
+      <p>Eric Tetzlaff is an AI systems architect and founder-operator who builds production-grade document intelligence systems for high-stakes environments. He is the founder of <strong>BoardPath</strong>, a governance intelligence platform for HOA and condominium boards, and <strong>Auris Intelligence</strong>, a forensic legal document intelligence platform in active production use by a civil litigation law firm. His design philosophy — grounded in 14+ years of hands-on operations, workflow architecture, and governing document practice — holds that the most important thing an AI system can do is know what it doesn't know, and say so before it says anything else.</p>
+    </div>
+
+    <div class="use-tags">
+      <span class="use-tag">LinkedIn About</span>
+      <span class="use-tag">Speaker bio</span>
+      <span class="use-tag">Press mention</span>
+      <span class="use-tag">Email footer</span>
+      <span class="use-tag">Portfolio sidebar</span>
+      <span class="use-tag">Conference profile</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
